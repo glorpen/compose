@@ -398,7 +398,7 @@ class ServiceTest(unittest.TestCase):
     @mock.patch('compose.service.log', autospec=True)
     def test_pull_image(self, mock_log):
         service = Service('foo', client=self.mock_client, image='someimage:sometag')
-        service.pull()
+        [x for x in service.pull()]
         self.mock_client.pull.assert_called_once_with(
             'someimage',
             tag='sometag',
@@ -408,7 +408,7 @@ class ServiceTest(unittest.TestCase):
 
     def test_pull_image_no_tag(self):
         service = Service('foo', client=self.mock_client, image='ababab')
-        service.pull()
+        [x for x in service.pull()]
         self.mock_client.pull.assert_called_once_with(
             'ababab',
             tag='latest',
@@ -418,7 +418,7 @@ class ServiceTest(unittest.TestCase):
     @mock.patch('compose.service.log', autospec=True)
     def test_pull_image_digest(self, mock_log):
         service = Service('foo', client=self.mock_client, image='someimage@sha256:1234')
-        service.pull()
+        [x for x in service.pull()]
         self.mock_client.pull.assert_called_once_with(
             'someimage',
             tag='sha256:1234',
@@ -432,7 +432,7 @@ class ServiceTest(unittest.TestCase):
         service = Service(
             'foo', client=self.mock_client, image='someimage:sometag', platform='windows/x86_64'
         )
-        service.pull()
+        [x for x in service.pull()]
         assert self.mock_client.pull.call_count == 1
         call_args = self.mock_client.pull.call_args
         assert call_args[1]['platform'] == 'windows/x86_64'
@@ -444,7 +444,7 @@ class ServiceTest(unittest.TestCase):
             'foo', client=self.mock_client, image='someimage:sometag', platform='linux/arm'
         )
         with pytest.raises(OperationFailedError):
-            service.pull()
+            next(service.pull())
 
     def test_pull_image_with_default_platform(self):
         self.mock_client.api_version = '1.35'
@@ -454,7 +454,7 @@ class ServiceTest(unittest.TestCase):
             default_platform='linux'
         )
         assert service.platform == 'linux'
-        service.pull()
+        [x for x in service.pull()]
 
         assert self.mock_client.pull.call_count == 1
         call_args = self.mock_client.pull.call_args
